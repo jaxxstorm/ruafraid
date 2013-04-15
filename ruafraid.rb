@@ -3,30 +3,38 @@
 require 'net/http'
 require 'rexml/document'
 require 'pp'
+require 'logger'
 
-# Put your FreeDNS URL here
+# Put editable config
 url = ''
 ip_url = 'http://icanhazip.com'
+logdir = '/var/log/ruafraid'
+logpath = "#{logdir}/run.log"
 
+
+unless File.directory?(logdir)
+ puts "logdir doesn't exist"
+ exit 4
+end
+
+
+log = Logger.new(logpath)
 
 if url.empty?
-  puts "You haven't set an API URL. Try again"
+  log.error "You haven't set an API URL. Try again"
   exit 1
 end
 
-  # get the required data
+# get the required data
 response = Net::HTTP.get_response(URI.parse(url))
 if response.code.chomp != "200"
-  puts "Bad result from freedns.afraid.org"
-  puts "Please check your API url"
+  log.error "Bad result from freedns.afraid.org, please check your API url"
   exit 2
 end
 
 error_messages = /ERROR: Could not authenticate./
 if response.body =~ error_messages
-  puts "There was an error trying to authenticate"
-  puts "Have you changed your password?"
-  puts "Please check your FreeDNS API url"
+  log.error "Authentication error, please check your API url"
   exit 3
 end
 
@@ -62,12 +70,12 @@ end
 hosts.each_pair do |key,value|
   hosts[key].each do |x|
     if x["address"] == curr_ip.chomp
-      puts "#{key} does not need updating"    
+      log.info "#{key} does not need updating"    
     else 
       # we need to download the URL here, it's referenced with x["url"]
-      puts "#{key} needs updating"
+      log.info "#{key} needs updating"
       update_host = Net::HTTP.get_response(URI.parse(x["url"])).body
-      puts "#{key} has been updated to #{curr_ip}"
+      log.info "#{key} has been updated to #{curr_ip}"
     end
   end
 end
