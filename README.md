@@ -10,5 +10,9 @@ Ruby must be installed, there are no external gem requirements
 ## Usage
 
 Set the path to your ruby executable on the first line
-Modify the url path to specify your XML programmers XML API link. You can find it under the Dynamic DNS section on the left hand side
+Modify the url path to specify your XML programmers XML API link. You can find it under the Dynamic DNS section on the left hand side.
 Run the script. It's probably best to run it as a cron job once a day.
+
+## Caveats
+
+At present, this will update ALL of the domains in your freedns DB.
