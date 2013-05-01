@@ -11,14 +11,29 @@ ip_url = 'http://icanhazip.com'
 logdir = '/var/log/ruafraid'
 logpath = "#{logdir}/run.log"
 
+# Multi IO class for logger, with thanks to http://stackoverflow.com/a/6407200
+class MultiIO
+  def initialize(*targets)
+     @targets = targets
+  end
+
+  def write(*args)
+    @targets.each {|t| t.write(*args)}
+  end
+
+  def close
+    @targets.each(&:close)
+  end
+end
 
 unless File.directory?(logdir)
  puts "logdir doesn't exist"
  exit 4
 end
 
+log_file = File.open(logpath, "a")
+log = Logger.new MultiIO.new(STDOUT, log_file)
 
-log = Logger.new(logpath)
 
 if url.empty?
   log.error "You haven't set an API URL. Try again"
